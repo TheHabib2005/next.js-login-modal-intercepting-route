@@ -16,7 +16,7 @@ const SignUpModal = () => {
   const onCloseModal = (): void => {
     router.back();
   };
-  const handleClient = (event: MouseEventHandler<HTMLDivElement>) => {
+  const handleClient = (event: any) => {
     if (event.target === overlay.current && event.target !== wrapper.current)
       onCloseModal();
   };
