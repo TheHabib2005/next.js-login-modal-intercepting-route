@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { Auth } from "./auth/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export const middleware = (req: NextRequest) => {
