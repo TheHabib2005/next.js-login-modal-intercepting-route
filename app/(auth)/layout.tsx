@@ -13,7 +13,6 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-  modal,
 }: Readonly<{
   children: React.ReactNode;
   modal: React.ReactNode;
@@ -34,15 +33,6 @@ export default function RootLayout({
             style: {
               background: '#363636',
               color: '#fff',
-            },
-
-            // Default options for specific types
-            success: {
-              duration: 3000,
-              theme: {
-                primary: 'green',
-                secondary: 'black',
-              },
             },
           }}
         />
