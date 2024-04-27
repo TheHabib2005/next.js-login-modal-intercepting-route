@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import User from "@/db/models/user.model";
 import { transport } from "@/helpers/mail/mail";
 import conncetToDb from "@/db/config/conncetToDB";
-// conncetToDb();
+conncetToDb();
 interface ApiResponseType {
   success: boolean;
   status: number;
@@ -63,52 +63,52 @@ export const POST = async (req: Request) => {
       text: `your verification code is ${verificationCode}`,
     };
 
-    // const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email });
 
-    // if (user) {
-    //   // resend for email verify
-    //   const mailresponse = await transport.sendMail(mailOptions);
+    if (user) {
+      // resend for email verify
+      const mailresponse = await transport.sendMail(mailOptions);
 
-    //   user.verificationCode = verificationCode;
-    //   await user.save();
-    //   apiResponse = {
-    //     success: true,
-    //     status: 200,
-    //     message: "User already exists",
-    //     data: {
-    //       userId: user._id,
-    //     },
-    //     error: false,
-    //     errorMessage: "",
-    //   };
-    //   return NextResponse.json({ apiResponse });
-    // }
+      user.verificationCode = verificationCode;
+      await user.save();
+      apiResponse = {
+        success: true,
+        status: 200,
+        message: "User already exists",
+        data: {
+          userId: user._id,
+        },
+        error: false,
+        errorMessage: "",
+      };
+      return NextResponse.json({ apiResponse });
+    }
 
-    // const newUser = new User({
-    //   username,
-    //   email,
-    //   password: hashedpassword,
-    //   verificationCode,
-    // });
+    const newUser = new User({
+      username,
+      email,
+      password: hashedpassword,
+      verificationCode,
+    });
 
-    // const saveduser = await newUser.save();
+    const saveduser = await newUser.save();
 
-    // //send email ehwn user created for varify user
-    // const mailresponse = await transport.sendMail(mailOptions);
+    //send email ehwn user created for varify user
+    const mailresponse = await transport.sendMail(mailOptions);
 
-    // const userid = saveduser._id;
-    // if (mailOptions) {
-    //   apiResponse = {
-    //     success: true,
-    //     status: 200,
-    //     message: "User created",
-    //     data: {
-    //       userId: userid,
-    //     },
-    //     error: false,
-    //     errorMessage: "",
-    //   };
-    // }
+    const userid = saveduser._id;
+    if (mailOptions) {
+      apiResponse = {
+        success: true,
+        status: 200,
+        message: "User created",
+        data: {
+          userId: userid,
+        },
+        error: false,
+        errorMessage: "",
+      };
+    }
 
     apiResponse = {
       success: true,
