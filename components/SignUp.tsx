@@ -72,13 +72,16 @@ const SignupComponent = () => {
             }
 
             if (apiResponse.error) {
+                console.log("response", apiResponse);
+
                 setError(true)
                 toast.error("Something went wrong")
             }
 
             setLoading(false)
         } catch (error) {
-            console.log(error);
+            toast.error("Something went wrong")
+            console.log("error", error);
             setError(true)
             setLoading(false)
         }
