@@ -13,7 +13,7 @@ const OtpInput = ({ length = 6 }) => {
 
     const userOtp = "123456";
     const [otp, setOtp] = useState(new Array(length).fill(""));
-    const inputRefs = useRef<HTMLInputElement[]>([]);
+    const inputRefs = useRef<any>([]);
 
     useEffect(() => {
         if (inputRefs.current[0]) {
