@@ -1,7 +1,7 @@
 "use client"
 import OtpInput from '@/components/OtpInput'
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { Suspense, useEffect, useLayoutEffect, useState } from 'react'
 
 
 const VerifyEmail = () => {
@@ -21,8 +21,8 @@ const VerifyEmail = () => {
                 body: JSON.stringify({ userId })
             });
 
-          let result = await response.json();
-           
+            let result = await response.json();
+
 
 
 
@@ -43,8 +43,8 @@ const VerifyEmail = () => {
 
 
     return (
-        <>
-            {/* component */}
+        <Suspense fallback={"loading"}>
+
             <div className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-gray-50 py-12">
                 <div className="relative bg-white px-6 pt-10 pb-9 shadow-xl mx-auto w-full max-w-lg rounded-2xl">
                     <div className="mx-auto flex w-full max-w-md flex-col space-y-16">
@@ -62,7 +62,7 @@ const VerifyEmail = () => {
                     </div>
                 </div>
             </div>
-        </>
+        </Suspense>
 
     )
 }
