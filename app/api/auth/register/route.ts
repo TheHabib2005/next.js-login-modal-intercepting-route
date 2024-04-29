@@ -6,7 +6,7 @@ import User from "@/db/models/user.model";
 import { transport } from "@/helpers/mail/mail";
 import conncetToDb from "@/db/config/conncetToDB";
 conncetToDb();
-interface ApiResponseType {
+export interface ApiResponseType {
   success: boolean;
   status: number;
   message: string;
