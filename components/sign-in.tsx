@@ -2,23 +2,37 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState } from 'react';
+import CryptoJS, { AES } from 'crypto-js';
 import { useFormik } from "formik"
-import { number } from 'yup';
-import { SignInValidactionSchema } from '@/yup-schema';
-import { useRouter } from 'next/navigation';
+import { SignUpValidactionSchema } from '@/yup-schema';
+import bcrypt from "bcrypt"
 import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
+import jwt from 'jsonwebtoken';
+import { delay } from '@/helpers';
+import { ApiError } from 'next/dist/server/api-utils';
 interface initialValuesType {
 
     email: string;
     password: string | number;
 
 }
-const LoginComponent = () => {
+const encryptData = (data: any, secretKey: any): string => {
+    const encryptedData = AES.encrypt(JSON.stringify(data), secretKey).toString();
+    return encryptedData;
+};
+
+const SignInComponent = () => {
 
 
     const [loading, setLoading] = useState(false);
-    const [userData, setUserData] = useState([])
+    const [apiError, setApiError] = useState({
+        error: false,
+        errorMessage: ""
+    })
     const router = useRouter()
+    // console.log(ApiError);
+
 
     let initialValues: initialValuesType = {
 
@@ -28,41 +42,65 @@ const LoginComponent = () => {
     }
 
 
-    const handleLogin = async (userInfo: initialValuesType) => {
+
+
+
+    const loginAccount = async (userInfo: initialValuesType) => {
+
+        const payload = {
+            email: userInfo.email,
+            password: userInfo.password
+        };
+
+        let userData = encryptData(payload, process.env.NEXT_PUBLIC_CRYPTO_SECRET_KEY);
+        let authorizationRole = process.env.NEXT_PUBLIC_AUTHORIZATION_SECRET_KEY!
 
         try {
             setLoading(true)
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/api/authentication/signin/`, {
+            const response = await fetch(`api/auth/login`, {
                 method: "POST",
                 headers: {
-                    'Content-Type': 'application/json'
+                    authorization: authorizationRole,
                 },
-                body: JSON.stringify(userInfo)
+                body: JSON.stringify(userData)
             });
-            const data = await response.json();
-            if (data.success) {
-                toast.success(data.message);
-                console.log(data.savedUser);
-                setUserData(data.savedUser)
-                router.push("/userDetails")
+            const result = await response.json();
+            console.log(result);
+
+            if (result.success === true) {
+                toast.success("User Login Successfully!")
+                await delay(1000);
+                router.push(`/`)
+
             }
-            if (data.error) {
-                toast.error(data.error);
+
+            if (result.error) {
+                setApiError({
+                    error: true,
+                    errorMessage: result.message || result.errorMessage
+                })
+                toast.error("Something went wrong")
             }
 
             setLoading(false)
         } catch (error) {
-            console.log(error);
+            toast.error("Something went wrong")
+            setApiError({
+                error: true,
+                errorMessage: "Something went wrong"
+            })
+            setLoading(false)
         }
     }
 
 
 
-    const { handleSubmit, handleChange, handleReset, values, errors } = useFormik({
+    const { handleSubmit, handleChange, handleReset, values, isSubmitting, errors } = useFormik({
         initialValues,
-        validationSchema: SignInValidactionSchema,
+        // validationSchema: SignUpValidactionSchema,
         onSubmit: (value) => {
-            handleLogin(value)
+
+            loginAccount(value)
             handleReset({
                 username: "",
                 email: "",
@@ -79,21 +117,24 @@ const LoginComponent = () => {
     })
 
 
-
     return (
         <div
-            className=" bg-primary overflow-y-auto  overflow-x-hidden fixed top-0 right-0 left-0 z-50 h-full items-center justify-center flex"
+            className="relative h-screen items-center justify-center flex"
         >
+
+            {loading && <div className='absolute top-0 left-0 bg-gray-800/60 z-50 w-full  flex items-center justify-center h-screen'>
+                <svg className='w-20 h-20' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><linearGradient id="a11"><stop offset="0" stop-color="#000000" stop-opacity="0"></stop><stop offset="1" stop-color="#000000"></stop></linearGradient><circle fill="none" stroke="url(#a11)" stroke-width="15" stroke-linecap="round" stroke-dasharray="0 44 0 44 0 44 0 44 0 360" cx="100" cy="100" r="70" transform-origin="center"><animateTransform type="rotate" attributeName="transform" calcMode="discrete" dur="2" values="360;324;288;252;216;180;144;108;72;36" repeatCount="indefinite"></animateTransform></circle></svg>
+            </div>}
             <div className="relative p-4 w-full max-w-md h-full md:h-auto">
                 <div className="relative bg-secendery rounded-lg shadow">
                     <div className="p-5">
-                        <h3 className="text-xl mb-3 font-medium text-center text-white"> Wellcome to CDX-SHOP</h3>
+                        <h3 className="text-xl mb-3 font-medium text-center text-black"> Wellcome to CDX-SHOP</h3>
 
                         <div className="text-center">
-                            <p className="mb-3 text-xl font-semibold leading-5 text-white">
-                                Login in Your Account
+                            <p className="mb-3 text-xl font-semibold leading-5 text-black">
+                                Login Your Account
                             </p>
-                            <p className="mt-2 text-sm leading-4 text-white">
+                            <p className="mt-2 text-sm leading-4 text-black">
                                 You must be logged in to perform this action.
                             </p>
                         </div>
@@ -114,12 +155,12 @@ const LoginComponent = () => {
 
                         </div>
 
-                        <div className="flex w-full items-center gap-2 py-6 text-sm text-white">
+                        <div className="flex w-full items-center gap-2 py-6 text-sm text-black">
                             <div className="h-px w-full bg-slate-200"></div>
                             OR
                             <div className="h-px w-full bg-slate-200"></div>
                         </div>
-
+                        {apiError.error && <div className='w-full p-5 text-center my-2 bg-red-600 rounded-sm text-white text-xl'>{apiError.errorMessage}</div>}
                         <form onSubmit={handleSubmit}>
 
                             <div>
@@ -157,27 +198,19 @@ const LoginComponent = () => {
 
                             </div>
 
-                            <p className="mb-3 mt-2 text-sm text-gray-500">
-                                <a
-                                    href="/forgot-password"
-                                    className="text-blue-800 hover:text-blue-600"
-                                >
-                                    Reset your password?
-                                </a>
-                            </p>
+
                             <button
                                 type="submit"
-                                className="inline-flex w-full items-center justify-center rounded-lg bg-black p-2 py-3 text-sm font-medium text-white outline-none focus:ring-2 focus:ring-black focus:ring-offset-1 disabled:bg-gray-400"
+                                className="inline-flex w-full items-center justify-center  mt-3 rounded-lg bg-black p-2 py-3 text-sm font-medium text-white outline-none focus:ring-2 focus:ring-black focus:ring-offset-1 disabled:bg-gray-400"
                                 disabled={loading}
                             >
-                                Login
+                                {loading ? "Creating..." : "Login"}
                             </button>
                         </form>
-
-                        <div className="mt-6 text-center text-sm text-white">
+                        <div className="mt-6 text-center text-sm text-black">
                             Already Have a Account ?
-                            <Link href="/signup" className="font-medium text-[#4285f4]">
-                                {" "}create account
+                            <Link href="/sign-up" className="font-medium text-[#4285f4]">
+                                {" "}Create Account
                             </Link>
                         </div>
                     </div>
@@ -187,4 +220,4 @@ const LoginComponent = () => {
     )
 }
 
-export default LoginComponent
+export default SignInComponent

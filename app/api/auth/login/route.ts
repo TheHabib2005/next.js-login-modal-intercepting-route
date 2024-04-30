@@ -15,6 +15,14 @@ export interface ApiResponseType {
   errorMessage: string;
 }
 export const POST = async (req: Request) => {
+  const encryptData = (data: any, secretKey: any): string => {
+    const encryptedData = AES.encrypt(
+      JSON.stringify(data),
+      secretKey
+    ).toString();
+    return encryptedData;
+  };
+
   let apiResponse = {
     success: false,
     status: 200,
@@ -37,9 +45,9 @@ export const POST = async (req: Request) => {
       body,
       process.env.NEXT_PUBLIC_CRYPTO_SECRET_KEY!
     );
-    console.log(process.env.CRYPTO_SECRET_KEY);
+
     let { username, email, password } = result;
-    if (!username || !email || !password) {
+    if (!email || !password) {
       apiResponse = {
         success: false,
         status: 400,
@@ -51,75 +59,48 @@ export const POST = async (req: Request) => {
       return NextResponse.json(apiResponse);
     }
     //send email
-    const hashedpassword = await bcrypt.hash(password, 10);
-    const verificationCode = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
-
-    const mailOptions = {
-      from: "mdwear2005@gmail.com",
-      to: email,
-      subjcet: "Verify your email",
-      text: `your verification code is ${verificationCode}`,
-    };
 
     const user = await User.findOne({ email: email });
-
-    if (user) {
-      // resend for email verify
-      const mailresponse = await transport.sendMail(mailOptions);
-
-      user.verificationCode = verificationCode;
-      await user.save();
+    if (!user) {
       apiResponse = {
-        success: true,
-        status: 200,
-        message: "User already exists",
-        data: {
-          userId: user._id,
-        },
-        error: false,
-        errorMessage: "",
+        success: false,
+        status: 400,
+        message: "User not exists",
+        data: null,
+        error: true,
+        errorMessage: "User not exists",
       };
       return NextResponse.json(apiResponse);
     }
-
-    const newUser = new User({
-      username,
-      email,
-      password: hashedpassword,
-      verificationCode,
-    });
-
-    const saveduser = await newUser.save();
-
-    //send email ehwn user created for varify user
-    const mailresponse = await transport.sendMail(mailOptions);
-
-    const userid = saveduser._id;
-    if (mailOptions) {
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
       apiResponse = {
-        success: true,
-        status: 200,
-        message: "User created",
-        data: {
-          userId: userid,
-        },
-        error: false,
-        errorMessage: "",
+        success: false,
+        status: 400,
+        message: "you credentials is wrong!",
+        data: null,
+        error: true,
+        errorMessage: "you credentials is wrong!",
       };
+      return NextResponse.json(apiResponse);
     }
-
+    let auth_token = encryptData(
+      user._id,
+      process.env.NEXT_PUBLIC_CRYPTO_SECRET_KEY
+    );
     apiResponse = {
       success: true,
       status: 200,
-      message: "",
-      data: { username, email, password },
+      message: "user login successful",
+      data: null,
       error: false,
       errorMessage: "",
     };
-
-    return NextResponse.json({ apiResponse });
+    const response = NextResponse.json(apiResponse);
+    response.cookies.set("auth_token", auth_token, {
+      httpOnly: true,
+    });
+    return response;
   } catch (error) {
     apiResponse = {
       success: false,

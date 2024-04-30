@@ -1,10 +1,8 @@
 import conncetToDb from "@/db/config/conncetToDB";
 import User from "@/db/models/user.model";
-
 import { NextResponse } from "next/server";
 import { ApiResponseType } from "../register/route";
-
-import { AES } from "crypto-js";
+import CryptoJS, { AES } from "crypto-js";
 import { headers } from "next/headers";
 
 conncetToDb();
@@ -31,74 +29,63 @@ export const POST = async (req: Request) => {
     return NextResponse.json(apiResponse);
   }
   try {
-    const { userId } = await req.json();
-    const encryptData = (data: any, secretKey: any): string => {
-      const encryptedData = AES.encrypt(
-        JSON.stringify(data),
-        secretKey
-      ).toString();
-      return encryptedData;
-    };
-    const isUserExisting = await User.findById({ _id: userId });
+    const body = await req.json();
 
-    if (!isUserExisting) {
+    const decryptData = (encryptedData: string, secretKey: string) => {
+      const decryptedData = AES.decrypt(encryptedData, secretKey).toString(
+        CryptoJS.enc.Utf8
+      );
+      return JSON.parse(decryptedData);
+    };
+
+    const decodeResult = decryptData(
+      body,
+      process.env.NEXT_PUBLIC_CRYPTO_SECRET_KEY!
+    );
+    console.log(decodeResult);
+
+    let userEmailverificationCode = decodeResult;
+
+    const otpMatchUser = await User.findOne({
+      verificationCode: userEmailverificationCode,
+    });
+
+    if (!otpMatchUser) {
       apiResponse = {
         success: false,
         status: 200,
-        message: "user not found",
+        message: "you otp verification failed",
         data: null,
         error: false,
-        errorMessage: "user not found",
+        errorMessage: "you otp verification failed",
       };
       return NextResponse.json(apiResponse);
     }
 
-    let user = await User.findById({ _id: userId }).select(["-password"]);
-
-    // const hashedUserInfo = jwt.sign(
-    //   {
-    //     userDetails: {
-    //       // userEmail: user.email,
-    //       // verificationCode: user.verificationCode,
-    //       name: "generated",
-    //     },
-    //   },
-    //   process.env.NEXT_PUBLIC_TOKEN_SECRET!,
-    //   {
-    //     expiresIn: "1d",
-    //   }
-    // );
-
-    const userDetails = {
-      userEmail: user.email,
-      verificationCode: user.verificationCode,
-    };
-
-    let userData = encryptData(
-      userDetails,
-      process.env.NEXT_PUBLIC_CRYPTO_SECRET_KEY
-    );
+    otpMatchUser.isVerifyed = true;
+    otpMatchUser.verificationCode = "0";
+    await otpMatchUser.save();
 
     apiResponse = {
       success: true,
       status: 200,
-      message: "user found",
-      data: {
-        userData,
-      },
+      message: "email verification successful",
+      data: null,
       error: false,
-      errorMessage: "user  found",
+      errorMessage: "",
     };
 
     return NextResponse.json(apiResponse);
   } catch (error) {
+    console.log(error);
+
     apiResponse = {
       success: false,
       status: 400,
-      message: "something went wrong",
+      message: "something went wrong in email verification ",
       data: null,
       error: true,
-      errorMessage: "something went wrong",
+      errorMessage: "something went wrong in email verification ",
     };
     return NextResponse.json(apiResponse);
   }

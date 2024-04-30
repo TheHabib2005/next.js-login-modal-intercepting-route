@@ -26,7 +26,6 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
     },
     isVerifyed: {
       type: Boolean,
@@ -34,7 +33,6 @@ const userSchema = new Schema(
     },
     verificationCode: {
       type: String,
-      required: true,
     },
     resetPasswordCode: {
       type: Number,

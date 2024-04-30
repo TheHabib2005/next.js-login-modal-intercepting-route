@@ -16,6 +16,11 @@ interface initialValuesType {
     password: string | number;
 
 }
+const encryptData = (data: any, secretKey: any): string => {
+    const encryptedData = AES.encrypt(JSON.stringify(data), secretKey).toString();
+    return encryptedData;
+};
+
 const SignupComponent = () => {
 
 
@@ -30,13 +35,6 @@ const SignupComponent = () => {
         password: "",
 
     }
-
-    const encryptData = (data: any, secretKey: any): string => {
-        const encryptedData = AES.encrypt(JSON.stringify(data), secretKey).toString();
-        return encryptedData;
-    };
-
-    console.log(process.env.NEXT_PUBLIC_CRYPTO_SECRET_KEY);
 
 
 
@@ -61,18 +59,18 @@ const SignupComponent = () => {
                 },
                 body: JSON.stringify(userData)
             });
-            const { apiResponse } = await response.json();
+            const result = await response.json();
 
-            if (apiResponse.success) {
-                setUserData(apiResponse.data)
+            if (result.success) {
+                setUserData(result.data)
                 toast.success("User Created Successfully!")
                 await delay(1000);
-                router.push(`/verify-email?id=${apiResponse.data.userId}`)
+                router.push(`/verify-email?id=${result.data.userId}`)
 
             }
 
-            if (apiResponse.error) {
-                console.log("response", apiResponse);
+            if (result.error) {
+                console.log("response", result);
 
                 setError(true)
                 toast.error("Something went wrong")
