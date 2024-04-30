@@ -6,7 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { clearInterval } from "timers";
 
-const OtpInput = ({ length = 6, userOtp }) => {
+const OtpInput = ({ length = 6, userOtp }: any) => {
     const [successOtp, setSuccessOtp] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const router = useRouter()
