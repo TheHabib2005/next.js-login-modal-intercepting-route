@@ -70,7 +70,6 @@ const SignupComponent = () => {
                 toast.success("User Created Successfully!")
                 await delay(1000);
                 router.push(`/verify-email?id=${result.data.userId}`)
-
             }
 
             if (result.error) {

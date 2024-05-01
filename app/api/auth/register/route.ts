@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import User from "@/db/models/user.model";
 import { transport } from "@/helpers/mail/mail";
 import conncetToDb from "@/db/config/conncetToDB";
+import { delay } from "@/helpers";
 conncetToDb();
 export interface ApiResponseType {
   success: boolean;
@@ -68,8 +69,10 @@ export const POST = async (req: Request) => {
     if (user) {
       // resend for email verify
       const mailresponse = await transport.sendMail(mailOptions);
-
       user.verificationCode = verificationCode;
+      user.password = hashedpassword;
+      user.username = username;
+
       await user.save();
       apiResponse = {
         success: true,
@@ -94,10 +97,12 @@ export const POST = async (req: Request) => {
     const saveduser = await newUser.save();
 
     //send email ehwn user created for varify user
-    const mailresponse = await transport.sendMail(mailOptions);
+    const mailresponse: any = await transport.sendMail(mailOptions);
+    console.log(mailresponse);
 
     const userid = saveduser._id;
-    if (mailOptions) {
+
+    if (mailresponse) {
       apiResponse = {
         success: true,
         status: 200,
@@ -109,18 +114,10 @@ export const POST = async (req: Request) => {
         errorMessage: "",
       };
     }
-
-    apiResponse = {
-      success: true,
-      status: 200,
-      message: "",
-      data: { username, email, password },
-      error: false,
-      errorMessage: "",
-    };
-
-    return NextResponse.json({ apiResponse });
+    return NextResponse.json(apiResponse);
   } catch (error) {
+    console.log(error);
+
     apiResponse = {
       success: false,
       status: 500,

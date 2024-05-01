@@ -7,10 +7,11 @@ import toast from "react-hot-toast";
 import { clearInterval } from "timers";
 
 const OtpInput = ({ length = 6, userOtp }: any) => {
+
+
     const [successOtp, setSuccessOtp] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const router = useRouter()
-    const [timeTarget, settimeTarget] = useState(30);
 
     // const userOtp = "123456";
     const [otp, setOtp] = useState(new Array(length).fill(""));
@@ -22,20 +23,9 @@ const OtpInput = ({ length = 6, userOtp }: any) => {
         }
     }, []);
 
-    const handleTimeout = () => {
-        let time = timeTarget;
-        const interval = setInterval(() => {
-            if (time > 0) {
-                time = time - 1;
-                settimeTarget(time);
-            }
-            return;
-        }, 1000);
-    };
 
-    useEffect(() => {
-        timeTarget > 0 && handleTimeout();
-    }, [timeTarget, settimeTarget]);
+
+
 
     const handleChange = (index: number, e: any) => {
         const value = e.target.value;
@@ -163,7 +153,7 @@ const OtpInput = ({ length = 6, userOtp }: any) => {
                     <div>
                         {successOtp && (
                             <button
-                                className="flex flex-row items-center justify-center text-center w-full border rounded-xl outline-none py-5 bg-blue-700 border-none text-white text-sm shadow-sm"
+                                className="flex flex-row items-center justify-center text-center w-full border rounded-xl outline-none py-5 bg-blue-700 border-none text-white text-sm shadow-sm disabled:bg-gray-300 disabled:text-black"
                                 onClick={() => {
                                     verifyUserByEmailCode(otp.join(""))
                                 }}
@@ -173,24 +163,7 @@ const OtpInput = ({ length = 6, userOtp }: any) => {
                             </button>
                         )}
                     </div>
-                    <div className="flex flex-row items-center justify-center text-center text-sm font-medium space-x-1 text-gray-500">
-                        <p> dont recieve code?</p>
-                        {timeTarget > 0 ? (
-                            <a className="flex flex-row items-center text-gray-600 cursor-none">
-                                Resend
-                            </a>
-                        ) : (
-                            <a
-                                className="flex flex-row items-center text-blue-600 cursor-pointer"
-                                onClick={() => {
-                                    settimeTarget(30);
-                                }}
-                            >
-                                Resend
-                            </a>
-                        )}
-                        <span className="ml-5"> {timeTarget > 0 && timeTarget}</span>
-                    </div>
+
                 </div>
             </div>
         </div>

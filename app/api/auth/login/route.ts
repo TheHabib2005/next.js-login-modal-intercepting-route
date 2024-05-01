@@ -106,7 +106,9 @@ export const POST = async (req: Request) => {
       success: true,
       status: 200,
       message: "user login successful",
-      data: null,
+      data: {
+        userId: user._id,
+      },
       error: false,
       errorMessage: "",
     };

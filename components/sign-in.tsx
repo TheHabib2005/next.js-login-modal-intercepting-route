@@ -29,7 +29,8 @@ const SignInComponent = () => {
     const [apiError, setApiError] = useState({
         error: false,
         errorMessage: ""
-    })
+    });
+    const [userId, setUserId] = useState("")
     const router = useRouter()
     // console.log(ApiError);
 
@@ -71,7 +72,6 @@ const SignInComponent = () => {
                 toast.success("User Login Successfully!")
                 await delay(1000);
                 router.push(`/`)
-
             }
 
             if (result.error) {
@@ -109,7 +109,6 @@ const SignInComponent = () => {
         },
         onReset: () => {
             initialValues = {
-
                 email: "",
                 password: "",
             }
@@ -195,7 +194,7 @@ const SignInComponent = () => {
 
                                 />
                                 {errors.password && <p className='text-red-600 mb-2'>{errors.password}</p>}
-
+                                <Link className='py-2 capitalize flex' href={`/reset-password?id=sdfdsfdsf564dsf64dsfsdfds}`}>reset Password</Link>
                             </div>
 
 
