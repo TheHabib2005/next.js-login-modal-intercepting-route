@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import User from "@/db/models/user.model";
 import { transport } from "@/helpers/mail/mail";
 import conncetToDb from "@/db/config/conncetToDB";
+import { headers } from "next/headers";
 conncetToDb();
 export interface ApiResponseType {
   success: boolean;
@@ -23,6 +24,7 @@ export const POST = async (req: Request) => {
     return encryptedData;
   };
 
+  let authorizationRole = process.env.NEXT_PUBLIC_AUTHORIZATION_SECRET_KEY!;
   let apiResponse = {
     success: false,
     status: 200,
@@ -31,6 +33,18 @@ export const POST = async (req: Request) => {
     error: false,
     errorMessage: "",
   } as ApiResponseType;
+  const header = headers();
+  if (!header.get("authorization")?.startsWith(authorizationRole)) {
+    apiResponse = {
+      success: false,
+      status: 200,
+      message: "unAuthorized User",
+      data: null,
+      error: false,
+      errorMessage: "unAuthorized User",
+    };
+    return NextResponse.json(apiResponse);
+  }
   // Place the 'decryptData' function in your project
   try {
     let body = await req.json();

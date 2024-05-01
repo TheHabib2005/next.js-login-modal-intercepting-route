@@ -4,7 +4,7 @@ import Link from 'next/link';
 import React, { useState } from 'react';
 import CryptoJS, { AES } from 'crypto-js';
 import { useFormik } from "formik"
-import { SignUpValidactionSchema } from '@/yup-schema';
+import { SignInValidactionSchema, SignUpValidactionSchema } from '@/yup-schema';
 import bcrypt from "bcrypt"
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
@@ -97,7 +97,7 @@ const SignInComponent = () => {
 
     const { handleSubmit, handleChange, handleReset, values, isSubmitting, errors } = useFormik({
         initialValues,
-        // validationSchema: SignUpValidactionSchema,
+        validationSchema: SignInValidactionSchema,
         onSubmit: (value) => {
 
             loginAccount(value)

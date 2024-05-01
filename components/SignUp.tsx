@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import jwt from 'jsonwebtoken';
 import { delay } from '@/helpers';
+import { error } from 'console';
 interface initialValuesType {
     username: string;
     email: string;
@@ -26,7 +27,10 @@ const SignupComponent = () => {
 
     const [loading, setLoading] = useState(false);
     const [userData, setUserData] = useState([])
-    const [error, setError] = useState(false)
+    const [apiError, setApiError] = useState({
+        error: false,
+        errorMessage: "",
+    })
     const router = useRouter()
 
     let initialValues: initialValuesType = {
@@ -70,9 +74,11 @@ const SignupComponent = () => {
             }
 
             if (result.error) {
-                console.log("response", result);
 
-                setError(true)
+                setApiError({
+                    error: true,
+                    errorMessage: result.message || result.errorMessage
+                })
                 toast.error("Something went wrong")
             }
 
@@ -80,7 +86,10 @@ const SignupComponent = () => {
         } catch (error) {
             toast.error("Something went wrong")
             console.log("error", error);
-            setError(true)
+            setApiError({
+                error: true,
+                errorMessage: "Something went wrong"
+            })
             setLoading(false)
         }
     }
@@ -170,7 +179,7 @@ const SignupComponent = () => {
                             OR
                             <div className="h-px w-full bg-slate-200"></div>
                         </div>
-                        {error && <div>Something Want Wrong!</div>}
+                        {apiError.error && <div className='w-full p-5 text-center my-2 bg-red-600 rounded-sm text-white text-xl'>{apiError.errorMessage}</div>}
                         <form onSubmit={handleSubmit}>
                             <div>
                                 <label htmlFor="username" className="sr-only">
